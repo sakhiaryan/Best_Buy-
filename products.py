@@ -1,5 +1,5 @@
 class Product:
-    def __init__(self, name, price, quantity):
+    def __init__(self, name: str, price: float, quantity: int):
         if not name:
             raise ValueError("Product name cannot be empty.")
         if price < 0:
@@ -12,17 +12,17 @@ class Product:
         self.quantity = quantity
         self.active = True
 
-    def get_quantity(self):
+    def get_quantity(self) -> int:
         return self.quantity
 
-    def set_quantity(self, quantity):
+    def set_quantity(self, quantity: int):
         if quantity < 0:
             raise ValueError("Quantity cannot be negative.")
         self.quantity = quantity
         if quantity == 0:
             self.deactivate()
 
-    def is_active(self):
+    def is_active(self) -> bool:
         return self.active
 
     def activate(self):
@@ -34,7 +34,7 @@ class Product:
     def show(self):
         print(f"{self.name}, Price: {self.price}, Quantity: {self.quantity}")
 
-    def buy(self, quantity):
+    def buy(self, quantity: int) -> float:
         if not self.active:
             raise Exception(f"Cannot buy inactive product: {self.name}")
         if quantity <= 0:
@@ -51,13 +51,14 @@ class Product:
         return total_price
 
 
+# === TEST SECTION ===
 def main():
     bose = Product("Bose QuietComfort Earbuds", price=250, quantity=500)
     mac = Product("MacBook Air M2", price=1450, quantity=100)
 
-    print(bose.buy(50))
-    print(mac.buy(100))
-    print(mac.is_active())
+    print(bose.buy(50))     # Should print 12500
+    print(mac.buy(100))     # Should print 145000
+    print(mac.is_active())  # Should print False, because quantity=0
 
     bose.show()
     mac.show()
