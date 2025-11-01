@@ -1,71 +1,88 @@
 class Product:
-    def __init__(self, name: str, price: float, quantity: int):
-        if not name:
-            raise ValueError("Product name cannot be empty.")
-        if price < 0:
+    """
+    Represents a product in the store inventory.
+    Holds name, price, quantity, and active status.
+    """
+
+    def __init__(self, name, price, quantity):
+        """
+        Create a product.
+        :param name: non-empty string
+        :param price: non-negative float/int
+        :param quantity: non-negative int
+        """
+        if not name or not isinstance(name, str):
+            raise ValueError("Product name must be a non-empty string.")
+        if price is None or price < 0:
             raise ValueError("Price cannot be negative.")
-        if quantity < 0:
+        if quantity is None or quantity < 0:
             raise ValueError("Quantity cannot be negative.")
 
         self.name = name
-        self.price = price
-        self.quantity = quantity
+        self.price = float(price)
+        self.quantity = int(quantity)
         self.active = True
 
-    def get_quantity(self) -> int:
+    # -------- getters / setters --------
+    def get_quantity(self):
+        """Return current quantity (int)."""
         return self.quantity
 
-    def set_quantity(self, quantity: int):
-        if quantity < 0:
+    def set_quantity(self, quantity):
+        """
+        Set quantity; deactivates the product when it reaches 0.
+        :param quantity: non-negative int
+        """
+        if quantity is None or quantity < 0:
             raise ValueError("Quantity cannot be negative.")
-        self.quantity = quantity
-        if quantity == 0:
+        self.quantity = int(quantity)
+        if self.quantity == 0:
             self.deactivate()
+        elif not self.active:
+            # if quantity restored above 0, ensure active again
+            self.activate()
 
-    def is_active(self) -> bool:
+    # -------- active state --------
+    def is_active(self):
+        """Return True if product is active, else False."""
         return self.active
 
     def activate(self):
+        """Activate the product."""
         self.active = True
 
     def deactivate(self):
+        """Deactivate the product."""
         self.active = False
 
+    # -------- UI helpers --------
     def show(self):
-        print(f"{self.name}, Price: {self.price}, Quantity: {self.quantity}")
+        """Print a user-friendly line describing the product."""
+        status = "ACTIVE" if self.active else "INACTIVE"
+        print(f"{self.name}, Price: {self.price}, Quantity: {self.quantity} [{status}]")
 
-    def buy(self, quantity: int) -> float:
-        if not self.active:
+    # -------- business logic --------
+    def buy(self, quantity):
+        """
+        Buy a certain quantity of this product.
+        Uses getters/setters to keep encapsulation.
+        :param quantity: int > 0
+        :return: total price (float)
+        """
+        if not self.is_active():
             raise Exception(f"Cannot buy inactive product: {self.name}")
-        if quantity <= 0:
-            raise ValueError("Quantity must be greater than 0.")
-        if quantity > self.quantity:
-            raise Exception(f"Not enough stock for {self.name}.")
+        if quantity is None or int(quantity) <= 0:
+            raise ValueError("Quantity to buy must be greater than 0.")
+
+        quantity = int(quantity)
+        current = self.get_quantity()
+        if quantity > current:
+            raise Exception(f"Not enough stock for {self.name}. Requested {quantity}, available {current}.")
 
         total_price = self.price * quantity
-        self.quantity -= quantity
-
-        if self.quantity == 0:
-            self.deactivate()
-
+        self.set_quantity(current - quantity)
         return total_price
 
-
-# === TEST SECTION ===
-def main():
-    bose = Product("Bose QuietComfort Earbuds", price=250, quantity=500)
-    mac = Product("MacBook Air M2", price=1450, quantity=100)
-
-    print(bose.buy(50))     # Should print 12500
-    print(mac.buy(100))     # Should print 145000
-    print(mac.is_active())  # Should print False, because quantity=0
-
-    bose.show()
-    mac.show()
-
-    bose.set_quantity(1000)
-    bose.show()
-
-
-if __name__ == "__main__":
-    main()
+    # -------- nice repr --------
+    def __repr__(self):
+        return f"Product(name={self.name!r}, price={self.price}, quantity={self.quantity}, active={self.active})"
